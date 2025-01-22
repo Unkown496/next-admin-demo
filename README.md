@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Содержание
 
-## Getting Started
+- [Проблемы совместимости](#проблемы-совместимости)
+- [Стандартная конфигурация](#стандартная-конфигурация)
+- [Подход к конфигам](#подход-к-конфигам)
+- [Архитектура папок](#архитектура-папок)
 
-First, run the development server:
+# Проблемы совместимости
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+`adminjs` адаптер для `prisma`, не умеет работать с свежими версиями `prisma`, а работает только с версией `5.0.0`. Но это создает баги только при установке зависимостей, т.к `Npm` ругается на несовместимость версий, поэтому в этом прокте пример для `prsma@5.0.0`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Использование с другими orm
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+`adminjs` поддерживает более трех адаптеров по стандарту, можно использовать `mikroorm` для `next+ts` проекта к примеру, там таких проблем с версиями не будет
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Стандартная конфигурация
 
-## Learn More
+1. tailwindCss + scss
+2. prisma
+3. eslint + styleLint (опционально)
+4. cross-env|dotenv - для запуска в разных `NODE_ENV` и импорта env в стартер
 
-To learn more about Next.js, take a look at the following resources:
+# Подход к конфигам
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`.env` - Конфиги без префикса `NEXT_` относятся к серверу `express`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Архитектура папок
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`utils` - Папка для серверных утилит, сюда пойдут любые утилиты для express сервера

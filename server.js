@@ -2,7 +2,10 @@ import "dotenv/config";
 
 import { App } from "./utils/app.js";
 
-const app = new App(["Post"], {
+// models here
+const modelsNames = [];
+
+const app = new App(modelsNames, {
   isProduction: process.env.NODE_ENV === "production",
   port: process.env.PORT || 3000,
 });
