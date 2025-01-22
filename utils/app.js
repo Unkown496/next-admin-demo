@@ -1,44 +1,27 @@
+// env setup
+import 'dotenv/config';
+
 // other deps
-import ora from "ora";
-import { styleText } from "node:util";
-import argon2 from "argon2";
-import jwt from "jsonwebtoken";
+import ora from 'ora';
+import { styleText } from 'node:util';
 
 // server desp
-import express from "express";
-import next from "next";
+import express from 'express';
+import next from 'next';
 
 // admin js deps
-import AdminJS from "adminjs";
-import AdminJSExpress from "@adminjs/express";
-import { Database, Resource, getModelByName } from "@adminjs/prisma";
+import AdminJS from 'adminjs';
+import AdminJSExpress from '@adminjs/express';
+import { Database, Resource, getModelByName } from '@adminjs/prisma';
 
 // prisma deps
-import { PrismaClient } from "@prisma/client";
+import orm from '../prisma/orm.js';
 
-const prisma = new PrismaClient();
-
-/** @typedef {{ port: number, isProduction: boolean }} AppOptions */
+/** @typedef {{ port: number, isProduction: boolean, cookieSecret: string, adminJSOptions: Omit<import('adminjs').AdminJSOptions, "resources" | 'rootPath'> }} AppOptions */
 
 /** @type {(email: string, password: string) => Promise<string | null>} */
 const appAuth = async (email, password) => {
-  const admin = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  // admin not found
-  if (!admin) return null;
-
-  const passwordMatch = await argon2.verify(admin.password, password);
-
-  // password dont match
-  if (!passwordMatch) return null;
-
-  const token = jwt.sign(
-    { id: admin.id, email: admin.email },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES || "1h" }
-  );
+  const token = await orm.admin.singIn({ email, password });
 
   return token;
 };
@@ -46,6 +29,8 @@ const appAuth = async (email, password) => {
 export class App {
   isProduction = false;
   port = 3000;
+  adminJSOptions = {};
+  cookieSecret = 'secret';
 
   #nextServer = next({
     dev: !this.isProduction,
@@ -65,12 +50,19 @@ export class App {
    * @param {AppOptions} options
    */
   constructor(models, options) {
-    const { isProduction = false, port = 3000 } = options;
+    const {
+      isProduction = false,
+      cookieSecret = 'secret',
+      port = 3000,
+      adminJSOptions = {},
+    } = options;
 
     this.models = models;
 
     this.isProduction = isProduction;
     this.port = port;
+    this.adminJSOptions = adminJSOptions;
+    this.cookieSecret = cookieSecret;
   }
 
   #initAdmin() {
@@ -84,29 +76,41 @@ export class App {
         return {
           resource: {
             model: getModelByName(modelName),
-            client: prisma,
+            client: orm,
           },
-          options: {},
+          options: {
+            parent: {
+              name: '',
+            },
+          },
         };
       }),
+      rootPath: '/admin',
 
-      rootPath: "/admin",
+      ...this.adminJSOptions,
     });
 
-    this.#adminRouter = AdminJSExpress.buildRouter(this.#adminApp);
+    this.#adminRouter = AdminJSExpress.buildAuthenticatedRouter(
+      this.#adminApp,
+      {
+        cookieName: 'adminAuth',
+        authenticate: appAuth,
+        cookiePassword: this.cookieSecret,
+      },
+    );
 
     return;
   }
   init() {
     const load = ora({
-        text: "Initialization server...",
+        text: 'Initialization server...',
         hideCursor: true,
-        prefixText: styleText("blue", "server:"),
+        prefixText: styleText('blue', 'server:'),
       }),
       loadAdmin = ora({
-        text: "Initilazation admin app...",
+        text: 'Initilazation admin app...',
         hideCursor: true,
-        prefixText: styleText("magenta", "admin:"),
+        prefixText: styleText('magenta', 'admin:'),
       });
 
     load.start();
@@ -132,17 +136,17 @@ export class App {
       }
 
       // Proxing to next handle
-      expressServer.all("*", (req, res) => nextHandle(req, res));
+      expressServer.all('*', (req, res) => nextHandle(req, res));
 
       expressServer.listen(this.port, err => {
         if (err) return this.#nextServer.logError(err);
 
         load.stopAndPersist({
           text: `Server successfylly running at ${styleText(
-            "green",
+            'green',
             this.isProduction
               ? `port:${this.port}`
-              : `http://localhost:${this.port}`
+              : `http://localhost:${this.port}`,
           )}`,
         });
 
