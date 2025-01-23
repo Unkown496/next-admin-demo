@@ -9,15 +9,14 @@ import { styleText } from 'node:util';
 import express from 'express';
 import next from 'next';
 
-// admin js deps
-import AdminJS from 'adminjs';
-import AdminJSExpress from '@adminjs/express';
-import { Database, Resource, getModelByName } from '@adminjs/prisma';
+// admin deps
+import { Admin } from './admin.js';
 
 // prisma deps
 import orm from '../prisma/orm.js';
 
-/** @typedef {{ port: number, isProduction: boolean, cookieSecret: string, adminJSOptions: Omit<import('adminjs').AdminJSOptions, "resources" | 'rootPath'> }} AppOptions */
+/** @typedef {(server: import("express").Express) => void} LoadPluginsFunction */
+/** @typedef {{ port: number, isProduction: boolean, cookieSecret: string, adminJSOptions: Omit<import('adminjs').AdminJSOptions, "resources" | 'rootPath'>, onLoadPlugins: LoadPluginsFunction }} AppOptions */
 
 /** @type {(email: string, password: string) => Promise<string | null>} */
 const appAuth = async (email, password) => {
@@ -27,80 +26,62 @@ const appAuth = async (email, password) => {
 };
 
 export class App {
-  isProduction = false;
-  port = 3000;
-  adminJSOptions = {};
-  cookieSecret = 'secret';
+  /** @type {ReturnType<next>} */
+  #nextServer;
+  /** @type {import("express").Express} */
+  #expressServer;
 
-  #nextServer = next({
-    dev: !this.isProduction,
-    turbopack: true,
-    port: this.port,
-  });
-
-  /** @type {AdminJS} */
   #adminApp;
-  #adminRouter;
 
-  models = [];
+  /** @type {LoadPluginsFunction} */
+  loadPlugins;
+  isProduction;
+  port;
 
   /**
-   *
    * @param {string[]} models
    * @param {AppOptions} options
    */
   constructor(models, options) {
     const {
-      isProduction = false,
-      cookieSecret = 'secret',
+      cookieSecret,
       port = 3000,
+      isProduction = false,
       adminJSOptions = {},
+      onLoadPlugins,
     } = options;
 
-    this.models = models;
-
-    this.isProduction = isProduction;
-    this.port = port;
-    this.adminJSOptions = adminJSOptions;
-    this.cookieSecret = cookieSecret;
-  }
-
-  #initAdmin() {
-    if (this.models.length === 0)
-      return console.warn("Models is empty, admin dashboard can't initialize!");
-
-    AdminJS.registerAdapter({ Database, Resource });
-
-    this.#adminApp = new AdminJS({
-      resources: this.models.map(modelName => {
-        return {
-          resource: {
-            model: getModelByName(modelName),
-            client: orm,
-          },
-          options: {
-            parent: {
-              name: '',
-            },
-          },
-        };
-      }),
-      rootPath: '/admin',
-
-      ...this.adminJSOptions,
+    this.#adminApp = new Admin(models, {
+      auth: appAuth,
+      admin: adminJSOptions,
+      cookieSecret,
     });
 
-    this.#adminRouter = AdminJSExpress.buildAuthenticatedRouter(
-      this.#adminApp,
-      {
-        cookieName: 'adminAuth',
-        authenticate: appAuth,
-        cookiePassword: this.cookieSecret,
-      },
-    );
+    this.loadPlugins = onLoadPlugins;
+
+    this.port = port;
+    this.isProduction = isProduction;
+  }
+
+  #initRequiredPlugins() {
+    // load user plugins
+    if (!!this.loadPlugins) this.loadPlugins(this.#expressServer);
 
     return;
   }
+  #initAdmin() {
+    return this.#adminApp.init();
+  }
+  #initNext() {
+    this.#nextServer = next({
+      port: this.port,
+      dev: !this.isProduction,
+      turbopack: true,
+    });
+
+    return;
+  }
+
   init() {
     const load = ora({
         text: 'Initialization server...',
@@ -115,30 +96,34 @@ export class App {
 
     load.start();
 
+    this.#initNext();
+
     this.#nextServer.prepare().then(() => {
+      this.#expressServer = express();
       const nextHandle = this.#nextServer.getRequestHandler();
 
-      const expressServer = express();
+      this.#initRequiredPlugins();
+      const admin = this.#initAdmin();
 
-      // init admin app
-      if (this.models.length > 0) {
-        loadAdmin.start();
-
-        this.#initAdmin();
-
-        expressServer.use(this.#adminApp.options.rootPath, this.#adminRouter);
+      if (!!admin) {
+        this.#expressServer.use(
+          admin.adminApp.options.rootPath,
+          admin.adminRouter,
+        );
 
         loadAdmin.stopAndPersist({
-          text: `Admin app successfylly start on path ${
-            this.#adminApp.options.rootPath
-          }`,
+          text: `Admin app successfylly start on path ${styleText(
+            'cyan',
+            admin.adminApp.options.rootPath,
+          )}`,
         });
       }
 
-      // Proxing to next handle
-      expressServer.all('*', (req, res) => nextHandle(req, res));
+      // finally include next
+      this.#expressServer.all('*', (req, res) => nextHandle(req, res));
 
-      expressServer.listen(this.port, err => {
+      // server listen on port
+      this.#expressServer.listen(this.port, err => {
         if (err) return this.#nextServer.logError(err);
 
         load.stopAndPersist({
@@ -153,5 +138,7 @@ export class App {
         return;
       });
     });
+
+    return;
   }
 }

@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { App } from './utils/app.js';
 
 // models here
-const modelsNames = [''];
+const modelsNames = ['Admin'];
 
 const app = new App(modelsNames, {
   isProduction: process.env.NODE_ENV === 'production',
@@ -13,7 +13,9 @@ const app = new App(modelsNames, {
 
   adminJSOptions: {
     branding: {
-      companyName: 'skeleton',
+      companyName: 'Admin',
+      logo: false,
+      withMadeWithLove: false,
     },
   },
 });
