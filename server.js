@@ -2,6 +2,9 @@ import 'dotenv/config';
 
 import { App } from './utils/app.js';
 
+// express-helmet plugin
+import helmet from 'helmet';
+
 // models here
 const modelsNames = ['Admin'];
 
@@ -10,6 +13,12 @@ const app = new App(modelsNames, {
   port: process.env.PORT || 3000,
 
   cookieSecret: process.env.COOKIE_SECRET || 'secret',
+
+  onLoadPlugins(server) {
+    server.use(helmet());
+
+    return server;
+  },
 
   adminJSOptions: {
     branding: {
