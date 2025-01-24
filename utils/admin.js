@@ -1,16 +1,19 @@
+import { resolve } from 'path';
 import { readFileSync, readdirSync } from 'fs';
 
-import AdminJS, { locales } from 'adminjs';
-import { buildAuthenticatedRouter, buildRouter } from '@adminjs/express';
+// admin deps
+import AdminJS from 'adminjs';
+import { buildAuthenticatedRouter } from '@adminjs/express';
 import { Database, Resource, getModelByName } from '@adminjs/prisma';
 
 // prisma deps
 import orm from '../prisma/orm.js';
-import { resolve } from 'path';
+
+// utils
 import { inLocales } from './path.js';
 
 /**
- * @typedef {{admin: Omit<import('adminjs').AdminJSOptions, "resources" | 'rootPath'>, auth: import('@adminjs/express').AuthenticationOptions['authenticate'], cookieSecret: string }} AdminOptions
+ * @typedef {{admin: Omit<import('adminjs').AdminJSOptions, "resources" | 'rootPath'>, auth: import('@adminjs/express').AuthenticationOptions['authenticate'], buildRouter: typeof buildAuthenticatedRouter, cookieSecret: string }} AdminOptions
  */
 
 export class Admin {
@@ -20,6 +23,8 @@ export class Admin {
   auth;
 
   cookieSecret;
+
+  buildRouter;
 
   /** @type {import("adminjs").AdminJS} */
   app;
@@ -34,12 +39,18 @@ export class Admin {
    * @param {string[]} models
    */
   constructor(models, options) {
-    const { admin, cookieSecret = 'secret', auth } = options;
+    const {
+      admin,
+      cookieSecret = 'secret',
+      auth,
+      buildRouter = buildAuthenticatedRouter,
+    } = options;
 
     this.models = models;
     this.options = admin;
     this.cookieSecret = cookieSecret;
     this.auth = auth;
+    this.buildRouter = buildAuthenticatedRouter;
   }
 
   #loadLocales() {
@@ -104,12 +115,11 @@ export class Admin {
       rootPath: '/admin',
     });
 
-    this.router = buildRouter(this.app);
-    // this.router = buildAuthenticatedRouter(this.app, {
-    //   cookieName: 'adminAuth',
-    //   authenticate: this.auth,
-    //   cookiePassword: this.cookieSecret,
-    // });
+    this.router = this.buildRouter(this.app, {
+      cookieName: 'adminAuth',
+      authenticate: this.auth,
+      cookiePassword: this.cookieSecret,
+    });
 
     return {
       adminApp: this.app,
