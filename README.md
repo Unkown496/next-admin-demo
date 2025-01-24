@@ -7,6 +7,7 @@
 - [Архитектура папок](#архитектура-папок)
 - [Выход к adminjs](#выход-к-adminjs)
 - [Мультиязычность](#мультиязычность)
+- [Загрузка плагинов в Express](#загрузка-плагинов-в-express)
 
 # Деплой
 
@@ -33,6 +34,7 @@ npm run dev|start
 2. prisma
 3. eslint + styleLint (опционально)
 4. cross-env|dotenv - для запуска в разных `NODE_ENV` и импорта env в стартер
+5. Helmet, [Swagger](https://www.npmjs.com/package/express-jsdoc-swagger)
 
 # Подход к конфигам
 
@@ -60,15 +62,15 @@ COOKIE_SECRET=
 
 ```js
 const app = new App(modelsNames, {
-  isProduction: process.env.NODE_ENV === 'production',
+  isProduction: process.env.NODE_ENV === "production",
   port: process.env.PORT || 3000,
 
-  cookieSecret: process.env.COOKIE_SECRET || 'secret',
+  cookieSecret: process.env.COOKIE_SECRET || "secret",
 
   // Выход на все опции кроме ресурсов и пути
   adminJSOptions: {
     branding: {
-      companyName: 'skeleton',
+      companyName: "skeleton",
     },
   },
 });
@@ -119,3 +121,17 @@ model Admin {
 
 Чтобы добавить свой перевод, нужно загрузить `.json` в папку `locales`, где ключом языка станет название файла по методу `localName.json`
 Вводить только короткий ключ языка
+
+# Загрузка плагинов в Express
+
+Это прямой выход к обьекту `Express`
+
+```js
+new App(["SomeModels"], {
+  onLoadPlugin(server) {
+    server.use(someExpressPlugin());
+  },
+});
+```
+
+Поэтому помимо запуска плагинов, возможно обьявление роутов, и прочие вещи с `Express`. **БЫТЬ АККУРАТНЕЕ**
