@@ -15,7 +15,7 @@ import { Admin } from './admin.js';
 // prisma deps
 import orm from '../prisma/orm.js';
 
-/** @typedef {(server: import("express").Express) => void} LoadPluginsFunction */
+/** @typedef {(server: import("express").Express, options: { isProduction: boolean, port: number }) => void} LoadPluginsFunction */
 /** @typedef {{ port: number, isProduction: boolean, cookieSecret: string, adminJSOptions: Omit<import('adminjs').AdminJSOptions, "resources" | 'rootPath'>, onLoadPlugins: LoadPluginsFunction }} AppOptions */
 
 /** @type {(email: string, password: string) => Promise<string | null>} */
@@ -65,7 +65,11 @@ export class App {
 
   #initRequiredPlugins() {
     // load user plugins
-    if (!!this.loadPlugins) this.loadPlugins(this.#expressServer);
+    if (!!this.loadPlugins)
+      this.loadPlugins(this.#expressServer, {
+        isProduction: this.isProduction,
+        port: this.port,
+      });
 
     return;
   }
