@@ -7,7 +7,7 @@ import { Swagger } from './utils/swagger.js';
 import helmet from 'helmet';
 
 // models here
-const modelsNames = [''];
+const modelsNames = [];
 
 const app = new App(modelsNames, {
   isProduction: process.env.NODE_ENV === 'production',

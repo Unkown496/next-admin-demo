@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 /**
  * A test Type Schema
@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 
 /**
  * GET /api/v1/hello
+ * @async
  * @description Test api endpoint description
  * @summary Test api endopoint
  * @tags Test

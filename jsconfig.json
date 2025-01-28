@@ -3,7 +3,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@utils/*": ["./utils/*"],
-      "@prisma/*": ["./prisma/*"]
+      "@prisma/*": ["./prisma/*"],
+      "@api/*": ["./src/app/api/*"],
+      "@components/*": ["./src/app/components/*"]
     }
   }
 }
