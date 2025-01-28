@@ -22,7 +22,8 @@ npm run dev|start
 
 # Проблемы совместимости
 
-`adminjs` адаптер для `prisma`, не умеет работать с свежими версиями `prisma`, а работает только с версией `5.0.0`. Но это создает баги только при установке зависимостей, т.к `Npm` ругается на несовместимость версий, поэтому в этом прокте пример для `prisma@5.0.0`.
+`adminjs` адаптер для `prisma`, не умеет работать с свежими версиями `prisma`, а работает только с версией `5.0.0`. Но это создает баги только при установке зависимостей, т.к `Npm` ругается на несовместимость версий, поэтому в этом прокте пример для `prisma@5.0.0`
+`jsconfig.json` - Не работает для всего что связано с `express`
 
 ### Использование с другими orm
 
@@ -62,15 +63,15 @@ COOKIE_SECRET=
 
 ```js
 const app = new App(modelsNames, {
-  isProduction: process.env.NODE_ENV === "production",
+  isProduction: process.env.NODE_ENV === 'production',
   port: process.env.PORT || 3000,
 
-  cookieSecret: process.env.COOKIE_SECRET || "secret",
+  cookieSecret: process.env.COOKIE_SECRET || 'secret',
 
   // Выход на все опции кроме ресурсов и пути
   adminJSOptions: {
     branding: {
-      companyName: "skeleton",
+      companyName: 'skeleton',
     },
   },
 });
@@ -127,7 +128,7 @@ model Admin {
 Это прямой выход к обьекту `Express`
 
 ```js
-new App(["SomeModels"], {
+new App(['SomeModels'], {
   onLoadPlugin(server) {
     server.use(someExpressPlugin());
   },
