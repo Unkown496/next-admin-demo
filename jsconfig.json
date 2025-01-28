@@ -5,7 +5,8 @@
       "@utils/*": ["./utils/*"],
       "@prisma/*": ["./prisma/*"],
       "@api/*": ["./src/app/api/*"],
-      "@components/*": ["./src/app/components/*"]
+      "@components/*": ["./src/app/components/*"],
+      "@icons/*": ["./public/icons/*"]
     }
   }
 }

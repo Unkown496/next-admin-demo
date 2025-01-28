@@ -36,6 +36,7 @@ npm run dev|start
 3. eslint + styleLint (опционально)
 4. cross-env|dotenv - для запуска в разных `NODE_ENV` и импорта env в стартер
 5. Helmet, [Swagger](https://www.npmjs.com/package/express-jsdoc-swagger)
+6. svgr
 
 # Подход к конфигам
 
@@ -56,22 +57,26 @@ COOKIE_SECRET=
 
 # Архитектура папок
 
-`utils` - Папка для серверных утилит, сюда пойдут любые утилиты для express сервера
-`generate` - Папка для генерирования различных вещей при помощи node.js
+`utils` - Папка для серверных утилит, сюда пойдут любые утилиты для express сервера <br />
+`generate` - Папка для генерирования различных вещей при помощи node.js <br />
+`/src/app/tests`
+
+- `browser` - Для тестирование `next/react` компонентов, страниц (интеграционное/unit)
+- `server` - Для тестирование `API routes` `next` (интеграционное/unit), тестирование мокированное
 
 # Выход к adminjs
 
 ```js
 const app = new App(modelsNames, {
-  isProduction: process.env.NODE_ENV === 'production',
+  isProduction: process.env.NODE_ENV === "production",
   port: process.env.PORT || 3000,
 
-  cookieSecret: process.env.COOKIE_SECRET || 'secret',
+  cookieSecret: process.env.COOKIE_SECRET || "secret",
 
   // Выход на все опции кроме ресурсов и пути
   adminJSOptions: {
     branding: {
-      companyName: 'skeleton',
+      companyName: "skeleton",
     },
   },
 });
@@ -128,7 +133,7 @@ model Admin {
 Это прямой выход к обьекту `Express`
 
 ```js
-new App(['SomeModels'], {
+new App(["SomeModels"], {
   onLoadPlugin(server) {
     server.use(someExpressPlugin());
   },
