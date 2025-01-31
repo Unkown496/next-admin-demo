@@ -85,6 +85,12 @@ export class App {
 
     return;
   }
+  #initExpressEnv() {
+    this.#expressServer.set('isDev', !this.isProduction);
+    this.#expressServer.set('port', this.port);
+
+    return;
+  }
 
   init() {
     const load = ora({
@@ -106,7 +112,10 @@ export class App {
       this.#expressServer = express();
       const nextHandle = this.#nextServer.getRequestHandler();
 
+      this.#initExpressEnv();
+
       this.#initRequiredPlugins();
+
       const admin = this.#initAdmin();
 
       if (!!admin) {
@@ -131,7 +140,7 @@ export class App {
         if (err) return this.#nextServer.logError(err);
 
         load.stopAndPersist({
-          text: `Server successfylly running at ${styleText(
+          text: `Server successfilly running at ${styleText(
             'green',
             this.isProduction
               ? `port:${this.port}`
