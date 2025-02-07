@@ -7,7 +7,10 @@ import jwt from 'jsonwebtoken';
 
 const client = new PrismaClient();
 
-export default new PrismaClient().$extends({
+/**
+ * @type {PrismaClient}
+ */
+const orm = new PrismaClient().$extends({
   model: {
     admin: {
       async singIn({ email, password }) {
@@ -47,3 +50,5 @@ export default new PrismaClient().$extends({
     },
   },
 });
+
+export default orm;

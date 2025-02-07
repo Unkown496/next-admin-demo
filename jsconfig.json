@@ -6,7 +6,12 @@
       "@prisma/*": ["./prisma/*"],
       "@api/*": ["./src/app/api/*"],
       "@components/*": ["./src/app/components/*"],
-      "@icons/*": ["./public/icons/*"]
+      "@icons/*": ["./public/icons/*"],
+      "@lib/*": ["./lib/*"],
+      "@helpers/*": ["./src/app/helpers/*"],
+      "@actions/*": ["./src/app/actions/*"],
+      "@seeds/*": ["./src/app/tests/seeds/*"],
+      "@mocks/*": ["./src/app/tests/__mocks__/*"]
     }
   }
 }
