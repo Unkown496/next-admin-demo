@@ -1,4 +1,4 @@
-import { vi, describe, test, expect } from "vitest";
+import { vi, describe, test, expect, beforeEach } from "vitest";
 import { render, screen, act, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -32,11 +32,41 @@ vi.mock("@actions/admin", () => {
 
 import { updateForm } from "@actions/admin";
 
+import FormExample from "@components/FormExample/FormExample";
 import FormExampleContainer from "@components/FormExample/FormExampleContainer";
 
-describe("FormExample async test", async () => {
+describe("FormExample async tests", async () => {
   const typedAdmin = adminSeed(),
     firstAdmin = mockedAdminData[0];
+
+  test("FormExample empty admins", () => {
+    const { unmount } = render(<FormExample adminsIds={[]} />);
+
+    const emptyText = screen.findByText("Admins list is empty");
+
+    expect(emptyText).toBeDefined();
+
+    unmount();
+  });
+
+  test("FormExample admins contains", async () => {
+    const { unmount } = render(<FormExample adminsIds={mockedAdminData} />);
+
+    expect(await screen.findByText("Choose admin id")).toBeDefined();
+
+    const options = await screen.findAllByRole("option");
+
+    expect(options).toHaveLength(mockedAdminData.length);
+
+    options.forEach((option, iOption) =>
+      expect(option).toHaveProperty(
+        "textContent",
+        mockedAdminData[iOption].id.toString()
+      )
+    );
+
+    unmount();
+  });
 
   test("FormExample success test send", async () => {
     const { unmount } = render(await FormExampleContainer());
