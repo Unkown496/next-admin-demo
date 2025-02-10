@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { updateForm } from '@actions/admin';
-import { useActionState } from 'react';
+import { updateForm } from "@actions/admin";
+import { useActionState } from "react";
 
 /** @type {import('react').FC<{ adminsIds: number[] }>} */
 export default function FormExample({ adminsIds = [] }) {
@@ -26,7 +26,10 @@ export default function FormExample({ adminsIds = [] }) {
           >
             {adminsIds.map((admin, i) => {
               return (
-                <option key={i} value={admin.id}>
+                <option
+                  key={i}
+                  value={admin.id}
+                >
                   {admin.id}
                 </option>
               );
@@ -56,6 +59,8 @@ export default function FormExample({ adminsIds = [] }) {
       {!!state?.success && <p className="text-emerald-500">Success update!</p>}
 
       <button
+        disabled={adminsIds.length === 0}
+        title={adminsIds.length === 0 ? "Can't submit admins list empty" : ""}
         type="submit"
         className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-9 px-4 sm:px-5 sm:min-w-32"
       >

@@ -1,6 +1,6 @@
 {
   "name": "next-admin-demo",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "type": "module",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon server.js",
@@ -9,7 +9,7 @@
     "test": "vitest --run",
     "test:dev": "vitest",
     "test:dev-ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest --run --coverage",
     "postbuild": "next-sitemap --config sitemap.config.js",
     "start": "cross-env NODE_ENV=production node server.js",
     "lint": "next lint",

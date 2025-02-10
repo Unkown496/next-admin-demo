@@ -39,12 +39,18 @@ describe("FormExample async tests", async () => {
   const typedAdmin = adminSeed(),
     firstAdmin = mockedAdminData[0];
 
-  test("FormExample empty admins", () => {
+  test("FormExample empty admins", async () => {
     const { unmount } = render(<FormExample adminsIds={[]} />);
 
-    const emptyText = screen.findByText("Admins list is empty");
+    const emptyText = await screen.findByText("Admins list is empty");
+    const buttonSubmit = await screen.getByRole("button", { name: "Submit" });
 
     expect(emptyText).toBeDefined();
+    expect(buttonSubmit).toHaveProperty("disabled", true);
+    expect(buttonSubmit).toHaveProperty(
+      "title",
+      "Can't submit admins list empty"
+    );
 
     unmount();
   });
