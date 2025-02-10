@@ -1,6 +1,6 @@
-import withValidation from '@lib/withValidation';
-import { Type as T } from '@sinclair/typebox';
-import { NextResponse } from 'next/server';
+import withValidation from "@lib/withValidation";
+import T from "@lib/validation";
+import { NextResponse } from "next/server";
 
 /**
  * POST /api/v1/hello/{id}
@@ -25,7 +25,7 @@ export const POST = withValidation(
       }),
     }),
     query: T.Object({
-      test: T.Number({ maximum: 10 }),
+      test: T.Numeric(),
     }),
-  },
+  }
 );
