@@ -1,6 +1,6 @@
 {
   "name": "next-admin-demo",
-  "version": "0.10.0-alpha",
+  "version": "0.10.1-alpha",
   "type": "module",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon server.js",

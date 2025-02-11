@@ -41,6 +41,10 @@ export default defineConfig({
 
         // seeds
         "**/seeds/**/*.js",
+
+        // cli files
+        "**/cli/*.js",
+        "**/cli/**/*.js",
       ],
     },
   },
